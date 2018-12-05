@@ -1,13 +1,13 @@
 import * as d3 from 'd3';
 
-export default function initPanel(svg) {
+export default function initPanel(svg, {onClick}) {
   const width = +svg.attr('width');
   const height = +svg.attr('height');
 
   const zoom = d3.zoom()
-    .scaleExtent([0.5, 10])
+    .scaleExtent([0.5, 2])
     .translateExtent([[-100, -100], [width + 90, height + 100]])
-    .on("zoom", zoomed);
+    .on('zoom', zoomed);
 
   const x = d3.scaleLinear()
     .domain([-1, width + 1])
@@ -27,26 +27,35 @@ export default function initPanel(svg) {
     .tickSize(width)
     .tickPadding(8 - width);
 
-  const view = svg.append("rect")
-    .attr("class", "view")
-    .attr("x", 0.5)
-    .attr("y", 0.5)
-    .attr("width", width - 1)
-    .attr("height", height - 1);
+  const view = svg.append('g')
+    .attr('class', 'view')
 
-  const gX = svg.append("g")
-    .attr("class", "axis axis--x")
+  const gX = svg.append('g')
+    .attr('class', 'axis axis--x')
     .call(xAxis);
 
-  const gY = svg.append("g")
-    .attr("class", "axis axis--y")
+  const gY = svg.append('g')
+    .attr('class', 'axis axis--y')
     .call(yAxis);
 
   svg.call(zoom);
+  svg.on('click', function() {
+    // 变换对象
+    const transform = d3.zoomTransform(this);
+    // point 是屏幕坐标
+    const absPoint = d3.clientPoint(this, d3.event);
+    // 坐标系相对坐标应进行一次逆变换
+    const relPoint = transform.invert(absPoint)
+    console.log('点击坐标', relPoint);
+
+    onClick && onClick(relPoint); // 消息传递
+  })
 
   function zoomed(svg) {
-    view.attr("transform", d3.event.transform);
+    view.attr('transform', d3.event.transform);
     gX.call(xAxis.scale(d3.event.transform.rescaleX(x)));
     gY.call(yAxis.scale(d3.event.transform.rescaleY(y)));
   }
+
+  return view;
 }
