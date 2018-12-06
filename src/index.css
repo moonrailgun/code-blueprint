@@ -16,8 +16,3 @@ canvas#blueprint {
   stroke-opacity: 0.3;
   shape-rendering: crispEdges;
 }
-
-.view {
-  fill: url(#gradient);
-  stroke: #000;
-}
